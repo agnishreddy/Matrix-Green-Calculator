@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Untitled</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Green Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #000;
+            overflow: hidden;
+        }
+
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .calculator {
+            background: rgba(45, 45, 45, 0.9);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(46, 204, 113, 0.2);
+            width: 320px;
+            backdrop-filter: blur(5px);
+        }
+
+        .display {
+            background: rgba(30, 30, 30, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: right;
+        }
+
+        #result {
+            color: #2ECC71;
+            font-size: 2em;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: right;
+            outline: none;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 5px rgba(46, 204, 113, 0.3);
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            background: rgba(64, 64, 64, 0.9);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+        }
+
+        .operator {
+            background: rgba(46, 204, 113, 0.9);
+            color: #000;
+        }
+
+        .special {
+            background: rgba(149, 165, 166, 0.9);
+            color: #1c1c1c;
+        }
+
+        button:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .span-2 {
+            grid-column: span 2;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+    <div class="calculator">
+        <div class="display">
+            <input type="text" id="result" readonly value="0">
+        </div>
+        <div class="buttons">
+            <button class="special" onclick="clearDisplay()">C</button>
+            <button class="special" onclick="deleteChar()">⌫</button>
+            <button class="operator" onclick="appendOperator('%')">%</button>
+            <button class="operator" onclick="appendOperator('/')">/</button>
+            
+            <button class="number" onclick="appendNumber('7')">7</button>
+            <button class="number" onclick="appendNumber('8')">8</button>
+            <button class="number" onclick="appendNumber('9')">9</button>
+            <button class="operator" onclick="appendOperator('*')">×</button>
+            
+            <button class="number" onclick="appendNumber('4')">4</button>
+            <button class="number" onclick="appendNumber('5')">5</button>
+            <button class="number" onclick="appendNumber('6')">6</button>
+            <button class="operator" onclick="appendOperator('-')">-</button>
+            
+            <button class="number" onclick="appendNumber('1')">1</button>
+            <button class="number" onclick="appendNumber('2')">2</button>
+            <button class="number" onclick="appendNumber('3')">3</button>
+            <button class="operator" onclick="appendOperator('+')">+</button>
+            
+            <button class="number span-2" onclick="appendNumber('0')">0</button>
+            <button class="number" onclick="appendNumber('.')">.</button>
+            <button class="operator" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        // Matrix Rain Effect
+        class MatrixRain {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.drops = [];
+                this.characters = '01ｦｱｳｴｵｶｷｹｺｻｼｽｾｿﾀﾂﾃﾅﾆﾇﾈﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ';
+                this.resize();
+                this.initialize();
+                window.addEventListener('resize', () => this.resize());
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.columns = Math.floor(this.canvas.width / 20);
+                this.drops = Array(this.columns).fill(1);
+            }
+
+            draw() {
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.fillStyle = '#2ECC71';
+                this.ctx.font = '15px monospace';
+
+                for (let i = 0; i < this.drops.length; i++) {
+                    const char = this.characters[Math.floor(Math.random() * this.characters.length)];
+                    this.ctx.fillText(char, i * 20, this.drops[i] * 20);
+                    
+                    if (this.drops[i] * 20 > this.canvas.height && Math.random() > 0.975) {
+                        this.drops[i] = 0;
+                    }
+                    this.drops[i]++;
+                }
+            }
+
+            initialize() {
+                const animate = () => {
+                    this.draw();
+                    requestAnimationFrame(animate);
+                };
+                animate();
+            }
+        }
+
+        // Initialize Matrix Rain
+        const canvas = document.getElementById('matrix-canvas');
+        new MatrixRain(canvas);
+
+        // Calculator Logic
+        let result = document.getElementById('result');
+        
+        function appendNumber(num) {
+            if (result.value === '0' && num !== '.') {
+                result.value = num;
+            } else {
+                result.value += num;
+            }
+        }
+
+        function appendOperator(operator) {
+            result.value += operator;
+        }
+
+        function clearDisplay() {
+            result.value = '0';
+        }
+
+        function deleteChar() {
+            result.value = result.value.slice(0, -1);
+            if (result.value === '') result.value = '0';
+        }
+
+        function calculate() {
+            try {
+                result.value = eval(result.value.replace(/×/g, '*'));
+            } catch (error) {
+                result.value = 'Error';
+            }
+        }
+    </script>
+</body>
+</html>
+<!-- partial -->
+  
+</body>
+</html>
